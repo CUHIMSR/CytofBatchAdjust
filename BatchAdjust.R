@@ -1,21 +1,17 @@
 ####         
 #
-# BatchAdjust.R   ##  ** modified from fcs19.R and fcs13.R **  
+# BatchAdjust.R   ## 
 #
-#  scale by XXp or SD:
-#        batch to batch*XXp(1)/XXp(batch)
-#        batch to batch*SD(1)/SD(batch)
-#  if(pooled % zeros) > maxFrac0ForMedianThreshold (0.39 for hybrid) map to SD of batch 1 as reference (fcs12)
-#  else map to XXp% of batch 1 
-#  
-#   modified from fcs17.R. Main difference: no mapping function, just straight scaling
+# main function : BatchAdjust()
 #
-#  fcs19_hybrid 
 
+
+# Install flowCore:
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("flowCore")
 library("flowCore") # for read.FCS
 
+# Define asinh factor:
 #g_asinh_b <- 1/5; # global asinh factor; transform is asinh(x*b); corresponds to a_b in cytofkit cytof_exprsExtract()
 g_asinh_b <- 1; # global asinh factor; transform is asinh(x*b); corresponds to a_b in cytofkit cytof_exprsExtract()
 
