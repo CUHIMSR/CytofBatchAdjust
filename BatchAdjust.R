@@ -36,6 +36,7 @@ logToFile <- function(logfilename, logmessage, timestamp=FALSE, echo=TRUE, overw
    }
 }
 
+# get80thPercentile
 # Return the requested (80th) percentile of the vector vec.
 #  perc <- .8; # percentile. median would be .5. Highest % zeros in any sample is 76.35%
 get80thPercentile <- function(vec, perc=.8){
@@ -47,6 +48,7 @@ get80thPercentile <- function(vec, perc=.8){
 }
 
 
+# listBatchesPresent
 # Find all anchor files in basedir,
 # parse file names to return a vector of batch numbers.
 #    xxx[batchKeyword][##][anchorKeyword]xxx.fcs
@@ -73,6 +75,7 @@ listBatchesPresent <- function(basedir, batchKeyword="Barcode_", anchorKeyword="
 }
 
 
+# getMinEventCount
 # Get the minimum number of events across anchor files.
 getMinEventCount <- function(anchorKeyword="anchor stim", basedir="/Users/ron-home/projects/DATA/SLE_Malaria/Bead_Normalized_Debarcoded_Singlet_JG_unzipped"){
 
@@ -103,6 +106,7 @@ getMinEventCount <- function(anchorKeyword="anchor stim", basedir="/Users/ron-ho
 }
 
 
+# get_cols_to_norm
 # List all columns in the most recently created fcs file.
 # This is only used if no channelsToAdjust file is specified.
 # Try to remove non-data channels:   "Time" "Event_length" "Center" "Offset" "Width" "Residual" 
@@ -142,6 +146,8 @@ get_cols_to_norm <- function(basedir, anchorKeyword=c()){
    return(cols_to_norm);
 }
 
+# getBatchNumFromFilename
+# Parse filename, return batch number.
 getBatchNumFromFilename <- function(anchorFileName, batchKeyword="Barcode_", anchorKeyword="anchor stim"){
    underscore_anchorKeyword <- sprintf("_%s", anchorKeyword);
    first_part <- unlist(strsplit(anchorFileName, underscore_anchorKeyword, fixed=TRUE));
@@ -150,11 +156,14 @@ getBatchNumFromFilename <- function(anchorFileName, batchKeyword="Barcode_", anc
    return(this_batch_num);
 }
 
+# getNZ
+# Return non-zero elements of vector.
 getNZ <- function(vec){
    wnz <- which(vec > 0);
    return(vec[wnz]);
 }
 
+# parseP
 # Drop the trailing p, return a number 1-100: "80p" -> 80 ; "50p" -> 50
 parseP <- function(str="80p"){
    if(length(grep("p$", str)) == 1){
@@ -168,6 +177,7 @@ parseP <- function(str="80p"){
 }
 
 
+# getValueMappings
 # Return mappingFunctionsList for quantile normalization.
 # mappingFunctionsList[[batch]][[acol]]
 getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, batches, cols_to_norm, transformation=TRUE, outputfile, nz_only=FALSE){
@@ -262,6 +272,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
 }
 
 
+# getScalingFactors
 # Return	scalingFactorsList 
 # scalingFactorsList[[batch]][[acol]] 
 # method = 80p | hybrid | SD | sd 
@@ -404,6 +415,8 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
    return(scalingFactorsList); 
 }
 
+# BatchAdjust
+# Main function for batch adjustment.
 # method = 80p | hybrid | SD | sd | quantile | QN
 BatchAdjust <- function(
    basedir=".",
