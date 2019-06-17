@@ -130,7 +130,8 @@ Adjustments for all batches are relative to batch 1, and samples in batch 1 are 
 
 
 
-Non-Anchor file naming:   xxx[batchKeyword][##]\_xxx[normToStimKeyword]xxx.fcs
+##### Non-Anchor file naming:   
+xxx[batchKeyword][##]\_xxx[normToStimKeyword]xxx.fcs
 
 'xxx' is optional and may be any characters.
 
@@ -138,7 +139,8 @@ Note that underscore '\_' is required after batch number (to distinguish e.g. Ba
 
 
 
-Anchor file naming:   xxx[batchKeyword][##]\_[anchorKeyword]xxx.fcs
+##### Anchor file naming:   
+xxx[batchKeyword][##]\_[anchorKeyword]xxx.fcs
 
 'xxx' is optional and may be any characters.
 
@@ -152,7 +154,7 @@ Separators such as '\_' are allowed, but must be specified in the anchor keyword
 
 
 
-File name examples 1:
+###### File name examples 1:
 
 011118\_Barcode\_7\_anchor stim.fcs (anchor sample)
 
@@ -174,7 +176,7 @@ anchorKeyword = "anchor stim"
 
 
 
-File name examples 2:
+###### File name examples 2:
 
 Set10\_CTstim.fcs (anchor sample)
 
