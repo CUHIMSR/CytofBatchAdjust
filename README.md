@@ -1,10 +1,7 @@
 # CytofBatchAdjust
 
 
-
 Harmonize all samples in a cytometry experiment using anchor samples included in each batch to compute adjustment factors for each channel in each batch.
-
-
 
 
 
@@ -19,20 +16,12 @@ https://cran.r-project.org/manuals.html
 
 
 
-
 ### Install required R packages
-
-
 
 Install flowCore if you haven't already.
 
 
-
-
-
 #### flowCore
-
-
 
 ```
 
@@ -44,25 +33,11 @@ biocLite("flowCore")
 
 
 
-
-
-
-
-
-
-
-
 ## Usage:
-
-
 
 BatchAdjust() is a command line application for R. It is designed to run in a linux environment or macOS.
 
-
-
 In an R session, navigate to where you downloaded BatchAdjust.R, and load the application by typing:
-
-
 
 ```
 
@@ -73,8 +48,6 @@ source("BatchAdjust.R")
 
 
 # Arguments
-
-
 
 BatchAdjust(
 basedir=".",
@@ -87,18 +60,24 @@ transformation=FALSE)
 
 
 
-basedir: directory to look for input (source) FCS files. All files to be adjusted must be in this directory.
+###### basedir: 
+directory to look for input (source) FCS files. All files to be adjusted must be in this directory.
 
-outdir:  directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files.
+###### outdir:  
+directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files.
 
-channelsFile: plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
+###### channelsFile: 
+plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
 
-batchKeyword = "Barcode\_" (refer to File naming requirements)
+###### batchKeyword:
+"Barcode\_" (refer to File naming requirements)
 
-anchorKeyword = "anchor stim" (refer to File naming requirements)
+###### anchorKeyword:
+"anchor stim" (refer to File naming requirements)
 
 
-method = 80p | SD | quantile
+###### method:
+80p | SD | quantile
 
 quantile: quantile normalization
 
@@ -111,8 +90,8 @@ SD: scaling to reference batch standard deviation
 Batches may be scaled to an arbitrary percentile by specifying any number (1-100) followed by the letter 'p'. For example method="75p" would scale channels to the 75th percentile of the reference batch.
 
 
-
-transformation = TRUE | FALSE
+###### transformation:
+ TRUE | FALSE
 TRUE: asinh transformation is applied before batch adjustment. sinh is applied to the adjusted data before writing results.
 FALSE: No transformation is applied.
 
