@@ -68,6 +68,7 @@ directory to write resulting batch adjusted files. Must not be the same as based
 
 ###### channelsFile: 
 plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
+For and example, see ChannelsToAdjust\_example.txt.
 
 ###### batchKeyword:
 "Barcode\_" (refer to File naming requirements)
