@@ -1,4 +1,4 @@
-# CytofBatchAdjust
+# BatchAdjust() - CyTOF Batch Adjust
 
 
 Harmonize all samples in a cytometry experiment using anchor samples included in each batch to compute adjustment factors for each channel in each batch.
