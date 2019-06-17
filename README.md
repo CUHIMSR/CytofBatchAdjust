@@ -68,7 +68,8 @@ directory to write resulting batch adjusted files. Must not be the same as based
 
 ###### channelsFile: 
 plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
-For and example, see ChannelsToAdjust\_example.txt.
+
+For an example, see ChannelsToAdjust\_example.txt.
 
 ###### batchKeyword:
 "Barcode\_" (refer to File naming requirements)
@@ -93,7 +94,9 @@ Batches may be scaled to an arbitrary percentile by specifying any number (1-100
 
 ###### transformation:
  TRUE | FALSE
+
 TRUE: asinh transformation is applied before batch adjustment. sinh is applied to the adjusted data before writing results.
+
 FALSE: No transformation is applied.
 
 
