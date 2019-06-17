@@ -80,7 +80,7 @@ BatchAdjust(
 basedir=".",
 outdir=".",
 channelsFile = "ChannelsToAdjust.txt",
-batchKeyword="Barcode_",
+batchKeyword="Barcode\_",
 anchorKeyword = "anchor stim",
 method="80p",
 transformation=FALSE)
@@ -93,7 +93,7 @@ outdir:  directory to write resulting batch adjusted files. Must not be the same
 
 channelsFile: plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
 
-batchKeyword = "Barcode_" (refer to File naming requirements)
+batchKeyword = "Barcode\_" (refer to File naming requirements)
 
 anchorKeyword = "anchor stim" (refer to File naming requirements)
 
@@ -130,23 +130,23 @@ Adjustments for all batches are relative to batch 1, and samples in batch 1 are 
 
 
 
-Non-Anchor file naming:   xxx[batchKeyword][##]_xxx[normToStimKeyword]xxx.fcs
+Non-Anchor file naming:   xxx[batchKeyword][##]\_xxx[normToStimKeyword]xxx.fcs
 
 'xxx' is optional and may be any characters.
 
-Note that underscore '_' is required after batch number (to distinguish e.g. Batch10_ from Batch1_).
+Note that underscore '\_' is required after batch number (to distinguish e.g. Batch10\_ from Batch1\_).
 
 
 
-Anchor file naming:   xxx[batchKeyword][##]_[anchorKeyword]xxx.fcs
+Anchor file naming:   xxx[batchKeyword][##]\_[anchorKeyword]xxx.fcs
 
 'xxx' is optional and may be any characters.
 
-Note that no other characters are allowed between [batchKeyword][##]_[anchorKeyword].
+Note that no other characters are allowed between [batchKeyword][##]\_[anchorKeyword].
 
-Note that underscore '_' is required after batch number (to distinguish e.g. Batch10_ from Batch1_).
+Note that underscore '\_' is required after batch number (to distinguish e.g. Batch10\_ from Batch1\_).
 
-Separators such as '_' are allowed, but must be specified in the anchor keywords.
+Separators such as '\_' are allowed, but must be specified in the anchor keywords.
 
 
 
@@ -154,19 +154,19 @@ Separators such as '_' are allowed, but must be specified in the anchor keywords
 
 File name examples 1:
 
-011118_Barcode_7_anchor stim.fcs (anchor sample)
+011118\_Barcode\_7\_anchor stim.fcs (anchor sample)
 
-011118_Barcode_7_310A_T0.fcs
+011118\_Barcode\_7\_310A\_T0.fcs
 
-011118_Barcode_7_310A_T6.fcs
+011118\_Barcode\_7\_310A\_T6.fcs
 
-011118_Barcode_7_310A_T6_R.fcs
+011118\_Barcode\_7\_310A\_T6\_R.fcs
 
 
 
 For the above file name examples, batchKeyword and anchorKeyword parameters should be set as follows:
 
-batchKeyword = "Barcode_"
+batchKeyword = "Barcode\_"
 
 anchorKeyword = "anchor stim"
 
@@ -176,15 +176,15 @@ anchorKeyword = "anchor stim"
 
 File name examples 2:
 
-Set10_CTstim.fcs (anchor sample)
+Set10\_CTstim.fcs (anchor sample)
 
-Set10_CCP13T0.fcs
+Set10\_CCP13T0.fcs
 
-Set10_CCP13T6LPS.fcs
+Set10\_CCP13T6LPS.fcs
 
-Set10_CCP13T6PBS.fcs
+Set10\_CCP13T6PBS.fcs
 
-Set10_CCP13T6R848.fcs
+Set10\_CCP13T6R848.fcs
 
 
 
