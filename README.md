@@ -22,13 +22,12 @@ Install flowCore if you haven't already.
 
 
 #### flowCore
-
+At the R command line enter:
 ```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-source("http://bioconductor.org/biocLite.R")
-
-biocLite("flowCore")
-
+BiocManager::install("flowCore")
 ```
 
 
@@ -49,6 +48,7 @@ source("BatchAdjust.R")
 
 # Arguments
 
+```
 BatchAdjust(
 basedir=".",
 outdir=".",
@@ -57,6 +57,7 @@ batchKeyword="Barcode\_",
 anchorKeyword = "anchor stim",
 method="80p",
 transformation=FALSE)
+```
 
 
 
