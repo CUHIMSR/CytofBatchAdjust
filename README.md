@@ -50,13 +50,13 @@ source("BatchAdjust.R")
 
 ```
 BatchAdjust(
-basedir=".",
-outdir=".",
-channelsFile = "ChannelsToAdjust.txt",
-batchKeyword="Barcode\_",
-anchorKeyword = "anchor stim",
-method="80p",
-transformation=FALSE)
+   basedir=".",
+   outdir=".",
+   channelsFile = "ChannelsToAdjust.txt",
+   batchKeyword="Barcode\_",
+   anchorKeyword = "anchor stim",
+   method="80p",
+   transformation=FALSE)
 ```
 
 
