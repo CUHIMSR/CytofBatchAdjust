@@ -59,9 +59,9 @@ listBatchesPresent <- function(basedir, batchKeyword="Barcode_", anchorKeyword="
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
 
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
    # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs  | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs  | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
 
    underscore_anchorKeyword <- sprintf("_%s", anchorKeyword);
@@ -83,9 +83,9 @@ getMinEventCount <- function(anchorKeyword="anchor stim", basedir="/Users/ron-ho
    whichlines <- NULL;
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
    # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
    minCount <- Inf;
@@ -186,9 +186,9 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
    whichlines <- minCount;
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
    # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
 
@@ -283,9 +283,9 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
    whichlines <- NULL;
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
    # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
 
