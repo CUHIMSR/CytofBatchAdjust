@@ -53,7 +53,7 @@ BatchAdjust(
    basedir=".",
    outdir=".",
    channelsFile = "ChannelsToAdjust.txt",
-   batchKeyword="Barcode\_",
+   batchKeyword="Barcode_",
    anchorKeyword = "anchor stim",
    method="80p",
    transformation=FALSE)
@@ -115,7 +115,7 @@ Adjustments for all batches are relative to batch 1, and samples in batch 1 are 
 
 
 ##### Non-Anchor file naming:   
-xxx[batchKeyword][##]\_xxx[normToStimKeyword]xxx.fcs
+xxx[batchKeyword][##]\_xxx.fcs
 
 'xxx' is optional and may be any characters.
 
