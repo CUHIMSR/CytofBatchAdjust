@@ -69,7 +69,9 @@ directory to write resulting batch adjusted files. Must not be the same as based
 
 
 ###### channelsFile: 
-plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
+plain text file listing channels to adjust, one per line. 
+Only channels listed here will be adjusted, and only channels that should be adjusted should be listed here. E.g. open channels and barcoding channels should be omitted from this file. 
+Channel names must match those in the FCS files exactly.
 
 For an example, see ChannelsToAdjust\_example.txt.
 
