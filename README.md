@@ -32,7 +32,7 @@ BiocManager::install("flowCore")
 
 
 
-## Usage:
+## Usage
 
 BatchAdjust() is a command line application for R. It is designed to run in a linux environment or macOS.
 
