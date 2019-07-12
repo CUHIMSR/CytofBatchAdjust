@@ -65,7 +65,8 @@ BatchAdjust(
 directory to look for input (source) FCS files. All files to be adjusted must be in this directory.
 
 ###### outdir:  
-directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files.
+directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files. This directory must exist prior to calling BatchAdjust().
+
 
 ###### channelsFile: 
 plain text file listing channels to adjust, one per line. Only channels listed here will be adjusted. Channel names must match those in the FCS files exactly.
@@ -90,7 +91,7 @@ SD: scaling to reference batch standard deviation
 
 80p: scaling to reference batch 80th percentile
 
-Batches may be scaled to an arbitrary percentile by specifying any number (1-100) followed by the letter 'p'. For example method="75p" would scale channels to the 75th percentile of the reference batch.
+Batches may be scaled to an user-defined percentile by specifying any number (1-100) followed by the letter 'p'. For example method="95p" would scale channels to the 95th percentile of the reference batch.
 
 
 ###### transformation:
@@ -110,7 +111,8 @@ Filenames for FCS files to be batch adjusted must contain a reference to which b
 
 One sample from each batch must also contain the anchor keyword defined by the parameter "anchorKeyword" to indicate the control sample expected to be consistent across batches.
 
-Adjustments for all batches are relative to batch 1, and samples in batch 1 are not changed.
+Adjustments for all batches are relative to batch 1, and samples in batch 1 are not changed. Therefore one batch must be must be labeled as batch 1. To change your reference batch, simply rename your files.
+
 
 
 
