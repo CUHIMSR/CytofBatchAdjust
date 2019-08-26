@@ -7,8 +7,10 @@
 
 
 # Install flowCore:
-# source("https://bioconductor.org/biocLite.R")
-# biocLite("flowCore")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("flowCore")
+
 library("flowCore") # for read.FCS
 
 # Define asinh factor:
@@ -123,7 +125,7 @@ get_cols_to_norm <- function(basedir, anchorKeyword=c()){
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
 
    if(length(anchors_list) == 0){
-      stop("Found no FCS files, no fields to adjust.");
+      stop("Found no FCS files, nothing to adjust.");
    }
    cols_to_norm <- c();
    anchor_file <- anchors_list[1];
@@ -271,6 +273,37 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
    return(mappingFunctionsList);
 }
 
+# Plot scaling factors, one plot per channel, each with a bar for each batch.
+barplot_scalingFactors <- function(scalingFactorsList, postdir){
+   # scalingFactorsList[[batch]][[acol]] 
+
+   # Format for plotting: index by channel
+   # listByCh[[ch]][[batch]] 
+   listByCh <- list();
+   for(bname in names(scalingFactorsList)){
+      if(bname == "1"){
+         next;
+      }
+      sfThisBatchByCh <- scalingFactorsList[[bname]];
+      for(ch in names(sfThisBatchByCh)){
+         if(is.null(listByCh[[ch]])){
+            listByCh[[ch]] <- list();
+         }
+         listByCh[[ch]][[bname]] <- sfThisBatchByCh[[ch]];
+      }
+   }
+   # plot for each channel
+   pngwidth<-1600; pngheight<-1200;
+   png(filename=sprintf("%s/ScalingFactors.png", postdir) , width=pngwidth, height=pngheight);
+   Nplots <- length(listByCh);
+   plotCols <- 9;
+   plotRows <- ceiling( Nplots / plotCols )
+   layout(matrix(1:(plotCols*plotRows), ncol=plotCols, byrow=T));
+   for(ch in names(listByCh)){
+      barplot(unlist(listByCh[[ch]]), main=ch, col="limegreen");
+   }
+   dev.off();
+}
 
 # getScalingFactors
 # Return	scalingFactorsList 
@@ -409,6 +442,7 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
 
    save(scalingFactorsList, file=sprintf("%s/scalingFactorsList.Rdata", dirname(outputfile)));
  
+   barplot_scalingFactors(scalingFactorsList, postdir=dirname(outputfile));
    mt1 <- Sys.time();
    logToFile(outputfile, "getScalingFactors duration:", timestamp=TRUE);
    logToFile(outputfile, format(mt1-mt0), timestamp=FALSE);
@@ -418,6 +452,8 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
 # BatchAdjust
 # Main function for batch adjustment.
 # method = 80p | hybrid | SD | sd | quantile | QN
+# addExt: Add an extension to the output file name to distinguish from original. eg addExt="_BN"
+#         The default addExt=c() makes no change to the output filename.
 BatchAdjust <- function(
    basedir=".",
    outdir=".",
@@ -426,7 +462,8 @@ BatchAdjust <- function(
    anchorKeyword = "anchor stim",
    nz_only=FALSE,
    method="80p",
-   transformation=FALSE){
+   transformation=FALSE,
+   addExt=c()){
 
    whichlines <- NULL;
    timestamp <- format(Sys.time(), format="%Y.%m.%d.%H%M%S");
@@ -576,7 +613,7 @@ BatchAdjust <- function(
          newFCSobject <- flowFrame(exprs=this_data, parameters=these_parameters, description=desc);
          #newFCSobject <- flowFrame(exprs=this_data, parameters=these_parameters)
 
-         addExt <- "_BN";
+         #addExt <- "_BN";
          # Add an extension to the output file name to distinguish.
          #  addExt <- c(); # or don't
          if(is.null(addExt)){
@@ -607,6 +644,356 @@ BatchAdjust <- function(
    
 
 
+
+
+
+
+
+#####################################################
+#  Plot distributions pre/post batch adjustment.
+# 
+
+plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="lightblue", colorPost="wheat", addExt=c()){
+   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
+   predir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=predir, fixed=TRUE);
+
+   chname <- get_ch_name(ch, predir);
+   anchorKeyword_underscore <- gsub(pattern=" ", replacement="_", x=anchorKeyword, fixed=TRUE);
+
+   basedir <- postdir;
+   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
+   pngoutdir <- sprintf("%s/DistributionPlots", basedir_escapeSpace);
+   mkdir_cmd <- sprintf("mkdir -p %s", pngoutdir);
+   mkret <- system(mkdir_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
+   pngname <- sprintf("%s/%s.png", pngoutdir, chname);
+
+   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+   anchors_list <- system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
+   anchors_list <- sortAnchorsByBatch(anchors_list,  anchorKeyword=anchorKeyword, batchKeyword=batchKeyword);
+   N_anchors <- length(anchors_list);
+
+   pngwidth<-900; pngheight<-2400;
+   pngwidth<-900; pngheight<-2600;
+   pngheight <- N_anchors * 260;
+   png(filename=pngname, width=pngwidth, height=pngheight);
+   layout(matrix(1:(2*N_anchors), ncol=1));
+
+   for(basedir in c(predir, postdir)){
+      for(fname in anchors_list){
+         if(basedir == predir){
+            col <- colorPre;
+            if(is.null(addExt)){
+               fname <- sprintf("%s/%s", predir_escapeSpace, basename(fname));
+            } else{
+               addedPat <- sprintf("%s.fcs$", addExt);
+               fname <- sprintf("%s/%s", predir_escapeSpace, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
+            }
+         } else{
+            col <- colorPost;
+         }
+         batchNum <- getBatchNumFromFilename(fname, batchKeyword=batchKeyword, anchorKeyword=anchorKeyword);
+         fce <- fc_read(fname, trans=TRUE, fullnames=TRUE);
+         plot1(fce, ch=ch, xlim=xlim, plotnz=plotnz, chname=chname, barcolor=col, basedir=basedir);
+         #title(ylab=batchNum, las=1, cex.lab=3, line=0, col.lab=1);
+         mtext(text=batchNum, side=2, cex=2, line=0, las=1);
+      }
+   }
+   dev.off();
+}
+
+get_ch_name <- function(ch, basedir=c()){
+	if(is.null(basedir)){
+		stop("get_ch_name must be supplied with basedir, a directory to find a sample fcs file.")
+	}
+   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
+   ls_cmd <- sprintf("ls -1t %s/*.fcs", basedir_escapeSpace);
+   anchors_list <- system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);   
+   anchor_file <- anchors_list[1];
+   fc <- read.FCS(anchor_file, which.lines=10);
+   chname <- grep(ch,pData(parameters(fc))$desc, value=T);
+   if(length(chname) == 0){
+      chi <- grep(ch,colnames(fc), value=F);
+      chname <- pData(parameters(fc))$desc[chi];
+   }
+   if(length(chname) > 1){
+      chname <- chname[1];
+   }
+   return(chname);
+}
+
+
+call_plotAllAPrePost1ch <- function(plotnz=TRUE, xlim=c(0,8), postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="lightblue", colorPost="wheat", addExt=c(), channelsFile = "ChannelsToAdjust_example.txt"){
+   #print(sprintf("call_plotAllAPrePost1ch %s", postdir), q=F);
+   cols_to_norm <- unique(as.character(read.table(file=channelsFile, header=F, sep="\n", quote="", as.is=TRUE)[,1]));
+   allChOut <- list();
+   for(ch in cols_to_norm){
+      #plotAllAPrePost1ch(ch=ch, plotnz=plotnz, xlim=xlim, postdir=postdir, anchorKeyword=anchorKeyword, batchKeyword=batchKeyword, predir=predir);
+      plotAllAPrePost1ch(ch=ch, xlim=xlim, plotnz=plotnz, postdir=postdir, batchKeyword=batchKeyword, anchorKeyword=anchorKeyword, predir=predir, colorPre=colorPre, colorPost=colorPost, addExt=addExt);
+   }
+   return(allChOut);
+}
+
+
+# fc_read() Load data from .fcs file.
+# fullnames=TRUE -> 145Nd_IFNg eg  more informative
+# fullnames=FALSE -> Nd145Di eg  matches cols_to_norm
+# trans=TRUE -> asinh
+fc_read <- function(fname="011118_Barcode_7_anchor stim_CD3+ CD19+.fcs", trans=TRUE, which.lines=NULL, fullnames=TRUE){
+   fc <- read.FCS(fname, transformation=NULL, which.lines=which.lines, truncate_max_range=FALSE); # flowFrame
+   fce <- exprs(fc); # matrix
+   # flowFrame is an AnnotatedDataFrame from Biobase. To access useful names, have to use this:
+   #p <- parameters(fc);
+   #pData(p)$desc
+   if(fullnames){
+      colnames(fce) <- pData(parameters(fc))$desc;
+   }
+   if(trans){
+      fce <- asinh(fce*g_asinh_b);
+   }
+   return(fce);
+}
+
+
+# plot1, fce is loaded by fc_read via flowCore. Channel names (ch and chname) are affected by fullnames=T|F
+# chname is the column name to plot. 
+plot1 <- function(fce, ch="In113Di", xlim=c(0,8), plotnz=FALSE, chname="113In_CD57", bordercolor=1, barcolor="wheat", brks=c(), basedir=c()){
+   if(is.null(chname)){
+      chname <- get_ch_name(ch, basedir);
+   }
+   if(plotnz){
+      wnz <- which(fce[,chname] > 0);
+      vec <- fce[wnz,chname];
+   } else{
+      vec <- fce[,chname];
+   }
+   #barcolor <- "lightgreen";
+   #barcolor <- "wheat";
+   #barcolor <- "violet";
+   #barcolor <- "lightblue";
+   if(is.null(brks)){
+      #brks <- 300;
+      #brks <-  seq(0,9,length.out=400);
+      #brks <-  seq(0,9,length.out=300);
+      #brks <-  seq(0,10,length.out=300);
+      #brks <-  seq(0,10,length.out=250);
+      #brks <-  seq(0,11,length.out=250);
+      brks <-  seq(0,12.5,length.out=250);
+   }
+   if(is.null(xlim)){
+      hist(vec, breaks=brks, xlab="", main="", border=bordercolor, col=barcolor, yaxt="n");
+   } else{
+      hist(vec, breaks=brks, xlab="", ylab="", main="", xlim=xlim, border=bordercolor, col=barcolor, yaxt="n", xaxt="n");
+   }
+   axis(side=1, labels=FALSE);
+}
+
+
+sortAnchorsByBatch <- function(anchor_list,  anchorKeyword="anchor stim", batchKeyword="Barcode_"){
+   Nanchors <- length(anchor_list);
+   batchNums <- rep(0, Nanchors);
+   for(ai in 1:Nanchors){
+      fname <- anchor_list[ai];
+      batchNums[ai] <- getBatchNumFromFilename(fname, batchKeyword=batchKeyword, anchorKeyword=anchorKeyword);
+   }
+   oi <- order(as.numeric(batchNums));
+   return(anchor_list[oi]);
+}
+
+
+
+############################################################################################
+# Testing mean cytokine levels, in all cell events,  not in subpopulations.
+
+
+# Return a vector of channel names, long names from the description field desc.
+get_cols_to_norm_long_names <- function(channelsFile = "ChannelsToAdjust_example.txt", basedir){
+   cols_to_norm <- unique(as.character(read.table(file=channelsFile, header=F, sep="\n", quote="", as.is=TRUE)[,1]));
+   long_names <- c();
+   for(cn in cols_to_norm){
+      long_names <- c(long_names, get_ch_name(cn, basedir=basedir));
+   }
+   return(long_names);
+}
+
+# Compute the trace of the covariance matrix.
+# Input matricies are  Rows:markers   X   Cols:barcode samples
+varDiffTotalPrePostT <- function(tbl_pre, tbl_post){
+
+   ####   Transpose   ####
+   tbl_pre <- t(tbl_pre);
+   tbl_post <- t(tbl_post);
+   #######################
+
+   cpre <- cov(tbl_pre);
+   cpost <- cov(tbl_post);
+   epre <- eigen(cpre, symmetric=TRUE, only.values=TRUE);
+   epost <- eigen(cpost, symmetric=TRUE, only.values=TRUE);
+   trace_pre <- sum(epre$values);
+   trace_post <- sum(epost$values);
+   return(trace_pre - trace_post);
+}
+
+# Swap columns of pre/post: 1to1, 2to2, etc
+# Calculate varDiffTotal for all possible permutations. Return vector.
+permuteColsPrePost <- function(mat_pre, mat_post){
+   if(!(all(colnames(mat_pre) == colnames(mat_post)))){
+      stop("pre/post colnames don't match");
+   }
+   mat <- cbind(mat_pre, mat_post);
+   N_bcs <- ncol(mat_pre);
+   tfvec <- rep(TRUE, N_bcs);
+   count <- 0;
+   testres <- rep(0, (2^N_bcs));
+   for(itr in 0:((2^N_bcs)-1)){
+      tfvec1 <- as.logical(intToBits(itr)[1:N_bcs]);
+      tfvec <- c(tfvec1, !tfvec1)
+      perm_mat_pre <- mat[,tfvec];
+      perm_mat_post <- mat[,!tfvec];
+      count <- count + 1;
+      testres[count] <- varDiffTotalPrePostT(perm_mat_pre, perm_mat_post);
+   }
+   return(testres);
+}
+
+
+############################################################################################
+
+# boxplot (top left)
+# rows: cytokines, cols: anchor samples
+# addPoints: add a point to the boxplot for each sample. (may want to adjust point size)
+boxSummaryValsPrePost <- function(mat_pre, mat_post, colorPre="blue", colorPost="wheat", addPoints=FALSE){
+   # make a list
+   valueslist <- list();
+   for(rowi in nrow(mat_pre):1){
+      vname <- sprintf("post %s", rownames(mat_post)[rowi]);
+      valueslist[[vname]] <- mat_post[rowi,];
+      vname <- sprintf("pre %s", rownames(mat_pre)[rowi]);
+      valueslist[[vname]] <- mat_pre[rowi,];
+   }
+   boxplot(valueslist, boxwex=.5, xaxt="n", yaxt="n", cex.axis=1, las=2, range=0, lwd=1, boxlwd=1.25, horizontal=TRUE, col=rep(c(colorPost, colorPre), 2*nrow(mat_pre)), labels=FALSE);
+   axis(side=1, las=0); # 1=below
+
+   if(addPoints){
+      if(nrow(mat_pre) > 15){
+         ptcex <- .3;
+      } else{
+         ptcex <- .8;
+      }
+      for(vi in 1:length(valueslist)){
+         points(y=rep(vi, length(valueslist[[vi]])), x=valueslist[[vi]], cex=ptcex, lwd=1, col="darkred");
+         points(y=rep(vi, length(valueslist[[vi]])), x=valueslist[[vi]], cex=ptcex/2, lwd=1, col="yellow");
+      }
+   }
+}
+
+# Variance barplot, top right
+varBarPlot <- function(mat_pre, mat_post, colorPre="blue", colorPost="wheat"){
+   if(nrow(mat_pre) > 15){
+      cexnames <- .7;
+   } else{
+      cexnames <- 1;
+   }
+   vpre <- apply(mat_pre, MARGIN=1, FUN=var);
+   vpost <- apply(mat_post, MARGIN=1, FUN=var);
+   mat <- rbind( rev(vpost), rev(vpre));
+   barplot(height=mat, horiz=TRUE, beside=TRUE, col=rep(c(colorPost, colorPre), 2*nrow(mat_pre)), las=1, cex.names=cexnames);
+   #title(main="Variance (in mean signal)");
+   title(main="Variance");
+}
+
+get_bar_code_from_filename <- function(fname, batchKeyword="Plate"){
+   parts <- unlist(strsplit( x=gsub(pattern=".fcs$", replacement="", x=fname), split=batchKeyword));
+   subparts <- unlist(strsplit( x=parts[2], split="_"));
+   return(subparts[1]);
+}
+
+# Return a matrix of values (mean or maybe var).
+# Rows are cytokines (or any marker).
+# Cols are anchor samples.
+# Does it matter if trans=FALSE or TRUE?
+# Similar to above, but not subpopulations. All cell events.
+get_summaries_per_channel <- function(basedir, cols_to_use, batchKeyword="Plate", anchorKeyword = "Sample2"){
+   ls_cmd <- sprintf("ls -1 %s/*.fcs", basedir);
+   fcsfiles <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+   #togrep <- "anchor stim";
+   togrep <- anchorKeyword;
+   filelist <- sort(grep(togrep, fcsfiles, fixed=TRUE, value=TRUE)); 
+   outmat <- c();
+   for(fname in filelist){
+      #print(fname, q=F);
+      bc <- get_bar_code_from_filename(fname, batchKeyword);
+      #fce <- fc_read(fname=fname, trans=FALSE, which.lines=NULL, fullnames=TRUE);
+      fce <- fc_read(fname=fname, trans=TRUE, which.lines=NULL, fullnames=TRUE);
+      tf2use <- colnames(fce) %in% cols_to_use;
+      vals <- apply(fce[,tf2use], MARGIN=2, FUN="mean"); # or var
+      outmat <- cbind(outmat, vals);
+      colnames(outmat)[ncol(outmat)] <- bc;
+   }
+   return(outmat);
+}
+
+# Three plots: 
+#  1. horizontal boxplot, pre and post box for each channel.
+#  2. Variance of plot 1. 
+#  3. Null distribution and p-value
+# Total variance (reduction) in mean cytokine levels for all cell events
+# Permutation test for significance swapping pre/post.
+# Figure 5 and S3
+totalVar_allEvents <- function(predir=c(), postdir=c(), batchKeyword="Plate", channelsFile="/Users/ron-home/projects/DATA/Cytof_HIMC/ChannelsToAdjust_example.txt", anchorKeyword = "Sample2", colorPre="blue", colorPost="wheat"){
+   t00 <- Sys.time();
+   if(is.null(predir)){
+      predir <- "/Users/ron-home/projects/DATA/Cytof_HIMC";
+   }
+   if(is.null(postdir)){
+      postdir <- "/Users/ron-home/projects/DATA/Cytof_HIMC/BN";
+   }
+
+   cols_to_use <- get_cols_to_norm_long_names(channelsFile=channelsFile, basedir=predir);
+
+      mat_pre <- get_summaries_per_channel(predir, cols_to_use, batchKeyword, anchorKeyword);
+      mat_post <- get_summaries_per_channel(postdir, cols_to_use, batchKeyword, anchorKeyword);
+      if(!(all(colnames(mat_pre) == colnames(mat_post)))){
+         stop("totalVar_allEvents: File names in pre and post directories don't match.");
+      }
+      test_real <- varDiffTotalPrePostT(mat_pre, mat_post);
+      perm_tests <- permuteColsPrePost(mat_pre, mat_post);
+      N_as_or_more_extreme <- sum(perm_tests >= test_real);
+      pv <- N_as_or_more_extreme / length(perm_tests);
+
+      pngwidth<-1600; pngheight<-1200;
+      png(filename=sprintf("%s/PrePostVariance.png", postdir) , width=pngwidth, height=pngheight);
+      layout(matrix(c(1,2,3,3), nrow=2, byrow=TRUE));
+      title <- sprintf("%s", "Mean signal intensity per replicate");
+
+      # plot 1:
+      par(cex=1.5);
+      par(mar=c(2,1,2,0)); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
+      boxSummaryValsPrePost(mat_pre, mat_post, colorPre, colorPost);
+      title(main=title);
+      legend("topright", legend=c("Pre", "Post"), col=c(colorPre, colorPost), lwd=9);
+      legend("topright", legend=c("Pre", "Post"), col=c(colorPre, colorPost), lwd=9);
+
+      # plot 2: variance bars
+      #par(mar=c(2,0,2,1)); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
+      par(mar=c(2,7.5,2,1)); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
+      varBarPlot(mat_pre, mat_post, colorPre, colorPost);
+
+      # plot 3: Bottom NULL dist hist
+      par(cex=1.5);
+      par(mar=c(5,4.5,4,1)+0.1); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
+      #hist(perm_tests, breaks=70, main="", xlab="Test statistic null distribution");
+      #hist(perm_tests, breaks=70, main="", xlab="Change in total variance null distribution");
+      hist(perm_tests, breaks=70, main="", xlab="Change in total variance", cex.lab=1.5);
+      abline(v=test_real, col=2, lwd=5);
+      #title(main=sprintf("p = %.05f", pv), line=-1);
+      title(main=sprintf("p = %.05f", pv), line=0);
+      print(sprintf("p = %.05f  %s", pv, "ALL"), q=F);
+      dev.off();
+
+   t11 <- Sys.time();
+   t11-t00;
+
+}
 
 
 
