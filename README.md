@@ -55,8 +55,10 @@ BatchAdjust(
    channelsFile = "ChannelsToAdjust.txt",
    batchKeyword="Barcode_",
    anchorKeyword = "anchor stim",
-   method="80p",
-   transformation=FALSE)
+   method="95p",
+   transformation=FALSE,
+   addExt=NULL,
+   plotDiagnostics=TRUE)
 ```
 
 
@@ -65,7 +67,7 @@ BatchAdjust(
 directory to look for input (source) FCS files. All files to be adjusted must be in this directory.
 
 ###### outdir:  
-directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files. This directory must exist prior to calling BatchAdjust().
+directory to write resulting batch adjusted files. Must not be the same as basedir to avoid overwriting original data files, unless addExt is set (see below). 
 
 
 ###### channelsFile: 
@@ -83,7 +85,7 @@ For an example, see ChannelsToAdjust\_example.txt.
 
 
 ###### method:
-80p | SD | quantile
+95p | SD | quantile
 
 quantile: quantile normalization
 
@@ -91,9 +93,9 @@ SD: scaling to reference batch standard deviation
 
 50p: scaling to reference batch 50th percentile (median)
 
-80p: scaling to reference batch 80th percentile
+95p: scaling to reference batch 95th percentile
 
-Batches may be scaled to an user-defined percentile by specifying any number (1-100) followed by the letter 'p'. For example method="95p" would scale channels to the 95th percentile of the reference batch.
+Batches may be scaled to an user-defined percentile by specifying any number (1-100) followed by the letter 'p'. For example method="80p" would scale channels to the 80th percentile of the reference batch.
 
 
 ###### transformation:
@@ -103,6 +105,22 @@ TRUE: asinh transformation is applied before batch adjustment. sinh is applied t
 
 FALSE: No transformation is applied.
 
+
+###### addExt:
+A character string to append to output filenames (before .fcs extension) to distinguish from input filenames.
+
+With the default=NULL, output filenames are identical to input filenames.
+If addExt is not NULL, basedir and outdir may be the same directory.
+
+
+###### plotDiagnostics:
+ TRUE | FALSE
+
+Generate distribution plots for each adjusted channel for all batch anchor samples before and after adjustment.
+
+Also generate a figure summarizing permutation test results for decreased variability in signal levels among batches for all channels.
+
+Note: this may take longer than the adjustment process itself. It is safe to interrupt this process, and doing so will not affect the batch adjusted .fcs files.
 
 
 
