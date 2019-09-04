@@ -62,8 +62,6 @@ listBatchesPresent <- function(basedir, batchKeyword="Barcode_", anchorKeyword="
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
 
    ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs  | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
 
    underscore_anchorKeyword <- sprintf("_%s", anchorKeyword);
@@ -86,8 +84,6 @@ getMinEventCount <- function(anchorKeyword="anchor stim", basedir="/Users/ron-ho
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
    ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
    minCount <- Inf;
@@ -189,8 +185,6 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
    ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
 
@@ -262,14 +256,14 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
          thisBatchFunctionsList[[acol]] <- spf;
       }
       mappingFunctionsList[[thisBatchChar]] <- thisBatchFunctionsList;
-      logToFile(outputfile, sprintf("Done mappingFunctionsList[[%s]]", thisBatchChar), timestamp=TRUE);
+      logToFile(outputfile, sprintf("Done mappingFunctionsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);
    }
 
    save(mappingFunctionsList, file=sprintf("%s/mappingFunctionsList.Rdata", dirname(outputfile)));
 
    mt1 <- Sys.time();
-   logToFile(outputfile, "getValueMappings duration:", timestamp=TRUE);
-   logToFile(outputfile, format(mt1-mt0), timestamp=FALSE);
+   logToFile(outputfile, "getValueMappings duration:", timestamp=TRUE, echo=FALSE);
+   logToFile(outputfile, format(mt1-mt0), timestamp=FALSE, echo=FALSE);
    return(mappingFunctionsList);
 }
 
@@ -317,8 +311,6 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
    ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   # Exclude Barcode_5 and Barcode_6 (they weren't stimulated).
-   #ls_cmd <- sprintf("ls -1 %s/*%s*.fcs | grep -v Barcode_5 | grep -v Barcode_6", basedir_escapeSpace, grepForAnchor_escapeSpace);
    anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    anchor_counter <- 0;
 
@@ -375,7 +367,7 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
       } else{ # method == "50p", or "80p"...
          maxFrac0ForMedianThreshold <- 1;   # do 80p only (or median)
          perc <- parseP(method)/100;
-         print(sprintf("method %s using perc: %.2f", method, perc), q=F);
+         #print(sprintf("method %s using perc: %.2f", method, perc), q=F);
       }
    }
    FractionZerosPooled <- list();
@@ -392,11 +384,11 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
       pzeros_ref <- 100*zeros_ref/length_ref;
       fzeros_ref <- zeros_ref/length_ref;
       FractionZerosPooled[[acol]] <- fzeros_ref;
-      print(sprintf("acol: %s  zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
+      #print(sprintf("acol: %s  zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
       if( FractionZerosPooled[[acol]] > maxFrac0ForMedianThreshold ){
-         print(sprintf("acol: %s using SD scaling zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
+         #print(sprintf("acol: %s using SD scaling zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
       } else{
-         print(sprintf("acol: %s using percentile scaling zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
+         #print(sprintf("acol: %s using percentile scaling zsd: %.2f   zmin: %2.f%%  zmax: %.2f%%   pooled0s: %.2f%%   %i of %i", acol, zsd, zmin, zmax, pzeros_ref, zeros_ref, length_ref));
       }
       
    }
@@ -425,10 +417,14 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
             # use percentile 80 or median scaling
             refvalue <- get80thPercentile(refvec, perc);
             thisvalue <- get80thPercentile(thisvec, perc);
-            if(refvalue == 0){
+            if(is.null(refvalue) || refvalue == 0){
+               zmaxplus <- ceiling(max(unlist(pZeros[[acol]])) + .01);
+               print(sprintf("***  Try increasing percentile scaling to %ip.  ***", zmaxplus), q=F);
                stop(sprintf("zero scaling factor: batch %s channel %s", thisBatchChar, acol));
             }
-            if(thisvalue == 0){
+            if(is.null(thisvalue) || thisvalue == 0){
+               zmaxplus <- ceiling(max(unlist(pZeros[[acol]])) + .01);
+               print(sprintf("***  Try increasing percentile scaling to %ip.  ***", zmaxplus), q=F);
                stop(sprintf("undefined scaling factor: batch %s channel %s", thisBatchChar, acol));
             }
             scf <- refvalue / thisvalue;
@@ -437,21 +433,21 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
          thisBatchScalingFactors[[acol]] <- scf;
       }
       scalingFactorsList[[thisBatchChar]] <- thisBatchScalingFactors;
-      logToFile(outputfile, sprintf("Done scalingFactorsList[[%s]]", thisBatchChar), timestamp=TRUE);
+      logToFile(outputfile, sprintf("Done scalingFactorsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);
    }
 
    save(scalingFactorsList, file=sprintf("%s/scalingFactorsList.Rdata", dirname(outputfile)));
  
    barplot_scalingFactors(scalingFactorsList, postdir=dirname(outputfile));
    mt1 <- Sys.time();
-   logToFile(outputfile, "getScalingFactors duration:", timestamp=TRUE);
-   logToFile(outputfile, format(mt1-mt0), timestamp=FALSE);
+   logToFile(outputfile, "getScalingFactors duration:", timestamp=TRUE, echo=FALSE);
+   logToFile(outputfile, format(mt1-mt0), timestamp=FALSE, echo=FALSE);
    return(scalingFactorsList); 
 }
 
 # BatchAdjust
 # Main function for batch adjustment.
-# method = 80p | hybrid | SD | sd | quantile | QN
+# method = 95p | hybrid | SD | sd | quantile | QN
 # addExt: Add an extension to the output file name to distinguish from original. eg addExt="_BN"
 #         The default addExt=c() makes no change to the output filename.
 BatchAdjust <- function(
@@ -461,12 +457,20 @@ BatchAdjust <- function(
    batchKeyword="Barcode_",
    anchorKeyword = "anchor stim",
    nz_only=FALSE,
-   method="80p",
+   method="95p",
    transformation=FALSE,
-   addExt=c()){
+   addExt=c(),
+   plotDiagnostics=TRUE){
 
    whichlines <- NULL;
    timestamp <- format(Sys.time(), format="%Y.%m.%d.%H%M%S");
+   # Escape any spaces in file names.
+   # Also enforce that batchKeyword doesn't contain spaces...
+   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
+   outdir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=outdir, fixed=TRUE);
+   anchorKeyword_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
+   mkdir_cmd <- sprintf("mkdir -p %s", outdir_escapeSpace);
+   mkret <- system(mkdir_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
    outputfile <- sprintf("%s/LOG_BatchAdjust.%s.txt", outdir, timestamp);
 
    logToFile(logfilename=outputfile, logmessage="BatchAdjust.R", timestamp=TRUE, echo=TRUE, overwrite=FALSE);
@@ -483,24 +487,19 @@ BatchAdjust <- function(
    if(nz_only){
       logToFile(outputfile, sprintf("nz_only:%s","TRUE"));
    }else{
-      logToFile(outputfile, sprintf("nz_only:%s","FALSE"));
+      logToFile(outputfile, sprintf("nz_only:%s","FALSE"), echo=FALSE);
    }
    logToFile(outputfile, sprintf("method:%s", method));
 
 
    t0 <- Sys.time(); # Time full duration.
 
-   # Escape any spaces in file names.
-   # Also enforce that batchKeyword doesn't contain spaces...
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   outdir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=outdir, fixed=TRUE);
-   anchorKeyword_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
 
    # Parameter checking.
-   if(basedir==outdir){
+   if( (is.null(addExt)||addExt=="") && (basedir==outdir)){
       print(basedir);
       print(outdir);
-      stop("basedir=outdir will overwrite source files. Please specifiy basedir and/or outdir.");
+      stop("basedir=outdir will overwrite source files. Please specifiy basedir and/or outdir, or set addExt.");
    }
    # Enforce that batchKeyword doesn't contain spaces...
    if( length(grep(pattern=" ", x=batchKeyword, fixed=TRUE)) > 0 ){
@@ -517,6 +516,11 @@ BatchAdjust <- function(
    logToFile(outputfile, sprintf("Adjusting %i channels.", N_ref_channels));
 
    batchesToAdjust <- listBatchesPresent(basedir, batchKeyword=batchKeyword, anchorKeyword=anchorKeyword);
+   if(! ( 1 %in% batchesToAdjust) ){
+      print("Batch 1 anchor not found.", q=F);
+      print("Check file naming requirements?", q=F);
+      stop("The reference anchor must exist and have the batch number 1.");
+   }
    logToFile(outputfile, "batchesToAdjust:");
    logToFile(outputfile, paste(batchesToAdjust, collapse=" "));
 
@@ -542,6 +546,7 @@ BatchAdjust <- function(
       # scalingFactorsList[[batch]][[colname]] 
    }
 
+   print("Adjusting...");
    # For each batch...
    for(thisbatch in batchesToAdjust){
       td0 <- Sys.time(); # time this batch
@@ -627,18 +632,30 @@ BatchAdjust <- function(
          #write.FCS(thisFCSobject, filename=outfilename);
          write.FCS(newFCSobject, filename=outfilename);
          tf1 <- Sys.time();
-         print("Per file read,norm,write:");
-         print(tf1-tf0);
+         #print("Per file read,norm,write:");
+         #print(tf1-tf0);
       }
       td1 <- Sys.time();
-      logToFile(outputfile, "Per batch:"); # ~1-2 minutes 
-      logToFile(outputfile, format(td1-td0));
+      logToFile(outputfile, "Per batch:", echo=FALSE); # ~1-2 minutes 
+      logToFile(outputfile, format(td1-td0), echo=FALSE);
    } # for each batch number
 
    t1 <- Sys.time();
    logToFile(outputfile, "Finished. Duration:", timestamp=TRUE);
    logToFile(outputfile, format(t1-t0)); 
 
+   if(plotDiagnostics){
+      
+      t00 <- Sys.time();
+      print("Testing total variance reduction:", q=F);
+      totalVar_allEvents(predir=basedir, postdir=outdir, batchKeyword=batchKeyword, channelsFile=channelsFile, anchorKeyword=anchorKeyword, colorPre="blue", colorPost="wheat");
+      print("Plotting pre/post distributions...", q=F);
+      call_plotAllAPrePost1ch(plotnz=TRUE, xlim=c(0,8), postdir=outdir, anchorKeyword=anchorKeyword, batchKeyword=batchKeyword, predir=basedir, colorPre="blue", colorPost="wheat", addExt=addExt, channelsFile=channelsFile);
+      t11 <- Sys.time();
+      logToFile(outputfile, "Finished diagnostic plots, duration:", timestamp=TRUE);
+      logToFile(outputfile, format(t11-t00)); 
+
+   }
 } # BatchAdjust
 
    
@@ -653,18 +670,21 @@ BatchAdjust <- function(
 #  Plot distributions pre/post batch adjustment.
 # 
 
-plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="lightblue", colorPost="wheat", addExt=c()){
+# Plot all anchors for one channel.
+plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="blue", colorPost="wheat", addExt=c()){
    grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
    predir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=predir, fixed=TRUE);
 
    chname <- get_ch_name(ch, predir);
+   print(sprintf("%s", chname), q=F);
    anchorKeyword_underscore <- gsub(pattern=" ", replacement="_", x=anchorKeyword, fixed=TRUE);
 
    basedir <- postdir;
    basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   pngoutdir <- sprintf("%s/DistributionPlots", basedir_escapeSpace);
-   mkdir_cmd <- sprintf("mkdir -p %s", pngoutdir);
+   pngoutdir_escaped <- sprintf("%s/DistributionPlots", basedir_escapeSpace);
+   mkdir_cmd <- sprintf("mkdir -p %s", pngoutdir_escaped);
    mkret <- system(mkdir_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
+   pngoutdir <- sprintf("%s/DistributionPlots", basedir);
    pngname <- sprintf("%s/%s.png", pngoutdir, chname);
 
    ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
@@ -725,12 +745,9 @@ get_ch_name <- function(ch, basedir=c()){
 call_plotAllAPrePost1ch <- function(plotnz=TRUE, xlim=c(0,8), postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="lightblue", colorPost="wheat", addExt=c(), channelsFile = "ChannelsToAdjust_example.txt"){
    #print(sprintf("call_plotAllAPrePost1ch %s", postdir), q=F);
    cols_to_norm <- unique(as.character(read.table(file=channelsFile, header=F, sep="\n", quote="", as.is=TRUE)[,1]));
-   allChOut <- list();
    for(ch in cols_to_norm){
-      #plotAllAPrePost1ch(ch=ch, plotnz=plotnz, xlim=xlim, postdir=postdir, anchorKeyword=anchorKeyword, batchKeyword=batchKeyword, predir=predir);
       plotAllAPrePost1ch(ch=ch, xlim=xlim, plotnz=plotnz, postdir=postdir, batchKeyword=batchKeyword, anchorKeyword=anchorKeyword, predir=predir, colorPre=colorPre, colorPost=colorPost, addExt=addExt);
    }
-   return(allChOut);
 }
 
 
@@ -913,7 +930,8 @@ get_bar_code_from_filename <- function(fname, batchKeyword="Plate"){
 # Does it matter if trans=FALSE or TRUE?
 # Similar to above, but not subpopulations. All cell events.
 get_summaries_per_channel <- function(basedir, cols_to_use, batchKeyword="Plate", anchorKeyword = "Sample2"){
-   ls_cmd <- sprintf("ls -1 %s/*.fcs", basedir);
+   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
+   ls_cmd <- sprintf("ls -1 %s/*.fcs", basedir_escapeSpace);
    fcsfiles <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
    #togrep <- "anchor stim";
    togrep <- anchorKeyword;
@@ -938,16 +956,8 @@ get_summaries_per_channel <- function(basedir, cols_to_use, batchKeyword="Plate"
 #  3. Null distribution and p-value
 # Total variance (reduction) in mean cytokine levels for all cell events
 # Permutation test for significance swapping pre/post.
-# Figure 5 and S3
-totalVar_allEvents <- function(predir=c(), postdir=c(), batchKeyword="Plate", channelsFile="/Users/ron-home/projects/DATA/Cytof_HIMC/ChannelsToAdjust_example.txt", anchorKeyword = "Sample2", colorPre="blue", colorPost="wheat"){
+totalVar_allEvents <- function(predir, postdir, batchKeyword, channelsFile, anchorKeyword, colorPre="blue", colorPost="wheat"){
    t00 <- Sys.time();
-   if(is.null(predir)){
-      predir <- "/Users/ron-home/projects/DATA/Cytof_HIMC";
-   }
-   if(is.null(postdir)){
-      postdir <- "/Users/ron-home/projects/DATA/Cytof_HIMC/BN";
-   }
-
    cols_to_use <- get_cols_to_norm_long_names(channelsFile=channelsFile, basedir=predir);
 
       mat_pre <- get_summaries_per_channel(predir, cols_to_use, batchKeyword, anchorKeyword);
@@ -987,12 +997,11 @@ totalVar_allEvents <- function(predir=c(), postdir=c(), batchKeyword="Plate", ch
       abline(v=test_real, col=2, lwd=5);
       #title(main=sprintf("p = %.05f", pv), line=-1);
       title(main=sprintf("p = %.05f", pv), line=0);
-      print(sprintf("p = %.05f  %s", pv, "ALL"), q=F);
       dev.off();
+      print(sprintf("p = %.05f", pv), q=F);
 
    t11 <- Sys.time();
    t11-t00;
-
 }
 
 
