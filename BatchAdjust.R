@@ -419,12 +419,12 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
             thisvalue <- get80thPercentile(thisvec, perc);
             if(is.null(refvalue) || refvalue == 0){
                zmaxplus <- ceiling(max(unlist(pZeros[[acol]])) + .01);
-               print(sprintf("***  Try increasing percentile scaling to %ip.  ***", zmaxplus), q=F);
+               print(sprintf("***  Try increasing percentile scaling to %ip, or exclude channel %s.  ***", zmaxplus, acol), q=F);
                stop(sprintf("zero scaling factor: batch %s channel %s", thisBatchChar, acol));
             }
             if(is.null(thisvalue) || thisvalue == 0){
                zmaxplus <- ceiling(max(unlist(pZeros[[acol]])) + .01);
-               print(sprintf("***  Try increasing percentile scaling to %ip.  ***", zmaxplus), q=F);
+               print(sprintf("***  Try increasing percentile scaling to %ip, or exclude channel %s.  ***", zmaxplus, acol), q=F);
                stop(sprintf("undefined scaling factor: batch %s channel %s", thisBatchChar, acol));
             }
             scf <- refvalue / thisvalue;
