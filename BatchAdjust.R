@@ -692,8 +692,7 @@ plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), 
    anchors_list <- sortAnchorsByBatch(anchors_list,  anchorKeyword=anchorKeyword, batchKeyword=batchKeyword);
    N_anchors <- length(anchors_list);
 
-   pngwidth<-900; pngheight<-2400;
-   pngwidth<-900; pngheight<-2600;
+   pngwidth<-900; 
    pngheight <- N_anchors * 260;
    png(filename=pngname, width=pngwidth, height=pngheight);
    layout(matrix(1:(2*N_anchors), ncol=1));
@@ -703,10 +702,12 @@ plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), 
          if(basedir == predir){
             col <- colorPre;
             if(is.null(addExt)){
-               fname <- sprintf("%s/%s", predir_escapeSpace, basename(fname));
+               #fname <- sprintf("%s/%s", predir_escapeSpace, basename(fname));
+               fname <- sprintf("%s/%s", predir, basename(fname));
             } else{
                addedPat <- sprintf("%s.fcs$", addExt);
-               fname <- sprintf("%s/%s", predir_escapeSpace, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
+               #fname <- sprintf("%s/%s", predir_escapeSpace, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
+               fname <- sprintf("%s/%s", predir, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
             }
          } else{
             col <- colorPost;
