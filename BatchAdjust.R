@@ -267,6 +267,17 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
    return(mappingFunctionsList);
 }
 
+# Ratios. Flip and negate values less than one. 
+# Just for visualization.
+flipLT1 <- function(vec){
+   wlt1 <- which(vec < 1);
+   if(length(wlt1) > 0){
+      flipped <- -1 * (1/vec[wlt1]);
+      vec[wlt1] <- flipped;
+   }
+   return(vec);
+}
+
 # Plot scaling factors, one plot per channel, each with a bar for each batch.
 barplot_scalingFactors <- function(scalingFactorsList, postdir){
    # scalingFactorsList[[batch]][[acol]] 
@@ -287,14 +298,23 @@ barplot_scalingFactors <- function(scalingFactorsList, postdir){
       }
    }
    # plot for each channel
-   pngwidth<-1600; pngheight<-1200;
-   png(filename=sprintf("%s/ScalingFactors.png", postdir) , width=pngwidth, height=pngheight);
    Nplots <- length(listByCh);
    plotCols <- 9;
    plotRows <- ceiling( Nplots / plotCols )
+   pngwidth<-4500; pngheight<-2000;
+   pngwidth<-plotCols*500; pngheight<-plotRows*400;
+   png(filename=sprintf("%s/ScalingFactors.png", postdir) , width=pngwidth, height=pngheight);
+   #png(filename=sprintf("%s/ScalingFactorsFlipped.png", postdir) , width=pngwidth, height=pngheight);
    layout(matrix(1:(plotCols*plotRows), ncol=plotCols, byrow=T));
+   par(mar=c(2.5,2.5,2.5,1)+0.1); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
+
+   par(cex=1);
    for(ch in names(listByCh)){
       barplot(unlist(listByCh[[ch]]), main=ch, col="limegreen");
+      #barplot(flipLT1(unlist(listByCh[[ch]])), main=ch, col="limegreen");
+      abline(h=1, lty=2, col="grey", lwd=2);
+      #abline(h=-1, lty=2, col="grey", lwd=2);
+
    }
    dev.off();
 }
