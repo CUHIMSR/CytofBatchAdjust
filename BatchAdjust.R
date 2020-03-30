@@ -1005,3 +1005,93 @@ totalVar_allEvents <- function(predir, postdir, batchKeyword, channelsFile, anch
 
 
 
+build_index_file <- function (
+  base_dir = ".",
+  index_file = "indexFile.csv",
+  sep = ",",
+  recursive = TRUE
+) {
+  if (!dir.exists(base_dir))
+    stop("Base directory does not exist.")
+  fcs_files <- dir(path = base_dir, pattern = "\\.fcs", full.names = TRUE,
+                   ignore.case = TRUE, recursive = recursive)
+  index_df <- data.frame(ORIGIN = fcs_files, stringsAsFactors = FALSE)
+  index_df$dirname <- dirname(index_df$ORIGIN)
+  index_df$basename <- basename(index_df$ORIGIN)
+  index_df$NEW <- ""
+  # index_df$batchnum <- 1
+  # index_df$reference <- ""
+  # index_df$reference[1] <- "x"  # as an example for editing
+  if (!is.null(index_file)) {
+    if (sep == ",") {
+      write.csv(index_df, file = index_file, quote = FALSE, row.names = FALSE)
+    } else if (sep == ";") {
+      write.csv2(index_df, file = index_file, quote = FALSE, row.names = FALSE)
+    } else if (sep == "\t") {
+      write.table(index_df, file = index_file, quote = FALSE, row.names = FALSE, sep = sep)
+    } else {
+      stop("Unknown separator.")
+    }
+  }
+}
+
+
+copy_indexed_files <- function(
+  index_file = "indexFile.csv",
+  destination_dir = "./renamed",
+  dry_run = FALSE
+) {
+  if (!file.exists(index_file))
+    stop("Index file \'", index_file, "\' cannot be found/read.")
+  # Guess CSV or CSV2 or tabulated
+  header <- readLines(index_file, n = 1)
+  if (grep(",", header)) {
+    index_df <- read.csv(index_file, stringsAsFactors = FALSE)
+  } else if (grep(";", header)) {
+    index_df <- read.csv2(index_file, stringsAsFactors = FALSE)
+  } else if (grep("\t", header)) {
+    index_df <- read.table(index_file, stringsAsFactors = FALSE, sep = "\t")
+  } else {
+    stop("Unknown separator.")
+  }
+  # Display top/bottom lines
+  cat("Overview of the index file\n")
+  print(index_df[1:min(6, nrow(index_df)),])
+  cat("...\n")
+  print(index_df[1:min(6, nrow(index_df)),])
+  cat("End!\n\n")
+  # Look ORIGIN and NEW columns
+  idx_origin <-"ORIGIN" == toupper(colnames(index_df))
+  idx_new <-"NEW" == toupper(colnames(index_df))
+  if ((any(idx_origin) && any(idx_new) == FALSE))
+    stop("Cannot find ORIGIN and/or NEW columns.")
+  idx_origin <- which(idx_origin)      
+  idx_new <- which(idx_new)      
+  # Final check
+  idx_filled <- which(index_df[, "NEW"] != "")
+  cat(length(idx_filled), " files will be copied.\n")
+  if (length(idx_filled) == 0)
+    stop("All destination file names are empty: no file to copy.")
+  idx_unique <- unique(index_df[, "NEW"] != "")
+  cat(length(idx_unique), " files are unique.\n")
+  if (length(idx_filled) != length(idx_filled))
+    stop("The count of unique files is not equal to the count of copied files.")
+  # Create a new directory for copied files
+  if (dir.exists(destination_dir))
+    stop("Directory \'", destination_dir, "\' should not exist.")
+  dir.create(destination_dir)
+  # Main loop
+  cat("Copying files\n")
+  for (i in idx_filled) {
+    OLD = index_df[i, idx_origin]
+    NEW = index_df[i, idx_new]
+    cat(i, " : ", OLD, "=>", NEW, "\n")
+    if (dry_run == FALSE)
+      file.copy(OLD, file.path(destination_dir, NEW))
+  }
+  cat("Done!\n\n")
+  # Final report
+  desination_files <- dir(destination_dir)
+  cat(length(destination_files), " files at destination.\n")
+  destination_files
+}
