@@ -4,23 +4,24 @@
 ## Main command
 
 Here is the main command to compute and apply the batch adjustment.
-"." corresponds to the working directory of R
-In RStudio use the files tab in the bottom right panel
-Click on the "..." at the right of the tab to select the directory of FCS files
-Then in the More menu, click "Set as working directory"
-"batch_normalized" corresponds to a new directory in the current directory
+
+"." corresponds to the working directory of R. In RStudio use the files tab in the bottom right panel. Click on the "..." at the right of the tab to select the directory of FCS files. Then in the More menu, click "Set as working directory". Now, the files you see in the Files tab are those contained in the "." directory.
+
+"batch_normalized" corresponds to a new directory in the current directory that will be created automatically (and should not exist yet). Normalized files will be located there.
+
+Other parameters are explained in the README.
 
 ```
 BatchAdjust(
-  basedir=".",
-  outdir="batch_normalized",
+  basedir = ".",
+  outdir = "batch_normalized",
   channelsFile = "ChannelsToAdjust.txt",
-  batchKeyword="Batch",
+  batchKeyword = "Batch",
   anchorKeyword = "Anchor",
-  method="95p",
-  transformation=FALSE,
-  addExt=NULL,
-  plotDiagnostics=TRUE)
+  method = "95p",
+  transformation = FALSE,
+  addExt = NULL,
+  plotDiagnostics = TRUE)
 ```
 
 If the file ChannelsToAdjust.txt does not exist, it will be filled with the
@@ -33,7 +34,8 @@ Once done with editing, run again the same command, the process will start.
 
 You can rerun the plot diagnostics if an error occurs. You have to run the
 following command in R console. Copy the values you set in the call to
-batchAdjust. Graphics will be overwritten
+batchAdjust. Graphics will be overwritten.
+
 ```
 call_plotAllAPrePost1ch(
   plotnz=TRUE,
@@ -44,7 +46,7 @@ call_plotAllAPrePost1ch(
   predir="copy_the_basedir",
   colorPre="blue", colorPost="wheat", 
   addExt="copy_the_addExt", 
-  channelsFile="copy_the_channelsFile");
+  channelsFile="copy_the_channelsFile")
 ```
 
 ## Copying FCS files with new names
