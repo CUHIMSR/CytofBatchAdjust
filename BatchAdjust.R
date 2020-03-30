@@ -49,6 +49,13 @@ get80thPercentile <- function(vec, perc=.8){
    return(perc_value);
 }
 
+ls_cmd <- function(basedir, patt) {
+  # basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
+  # grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
+  # ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
+  # sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+  dir(path = basedir, pattern = sprintf(".*%s.*\\.fcs", patt), ignore.case = TRUE, full.names = TRUE)
+}
 
 # listBatchesPresent
 # Find all anchor files in basedir,
@@ -58,12 +65,7 @@ get80thPercentile <- function(vec, perc=.8){
 # example: Set10_CTT0.fcs:  anchorKeyword="CTT0"; batchKeyword="Set";
 listBatchesPresent <- function(basedir, batchKeyword="Barcode_", anchorKeyword="anchor stim"){
    batches_present <- c();
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
-
+   anchors_list <- sort(ls_cmd(basedir, sprintf("_%s", anchorKeyword)))
    underscore_anchorKeyword <- sprintf("_%s", anchorKeyword);
    for(ananchor in anchors_list){
       first_part <- unlist(strsplit(ananchor, underscore_anchorKeyword, fixed=TRUE));
@@ -77,14 +79,11 @@ listBatchesPresent <- function(basedir, batchKeyword="Barcode_", anchorKeyword="
 
 # getMinEventCount
 # Get the minimum number of events across anchor files.
-getMinEventCount <- function(anchorKeyword="anchor stim", basedir="/Users/ron-home/projects/DATA/SLE_Malaria/Bead_Normalized_Debarcoded_Singlet_JG_unzipped"){
+getMinEventCount <- function(anchorKeyword="anchor stim", basedir){
 
    #T0 <- Sys.time();
    whichlines <- NULL;
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+   anchors_list <- sort(ls_cmd(basedir, sprintf("_%s", anchorKeyword)))
    anchor_counter <- 0;
    minCount <- Inf;
    for(ananchor in anchors_list){
@@ -114,12 +113,7 @@ get_cols_to_norm <- function(basedir, anchorKeyword=c()){
    if(is.null(anchorKeyword)){
       anchorKeyword <- "";
    }
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-
-   ls_cmd <- sprintf("ls -1t %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
-
+   anchors_list <- sort(ls_cmd(basedir, sprintf("_%s", anchorKeyword)))
    if(length(anchors_list) == 0){
       stop("Found no FCS files, nothing to adjust.");
    }
@@ -182,10 +176,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
 
    mt0 <- Sys.time();
    whichlines <- minCount;
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+   anchors_list <- sort(ls_cmd(basedir, patt = sprintf("_%s", anchorKeyword)))
    anchor_counter <- 0;
 
    # Build a 2-level list: anchorDataListList[[col_to_norm]][[batch]]
@@ -259,7 +250,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
       logToFile(outputfile, sprintf("Done mappingFunctionsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);
    }
 
-   save(mappingFunctionsList, file=sprintf("%s/mappingFunctionsList.Rdata", dirname(outputfile)));
+   save(mappingFunctionsList, file=file.path(dirname(outputfile), "mappingFunctionsList.Rdata"));
 
    mt1 <- Sys.time();
    logToFile(outputfile, "getValueMappings duration:", timestamp=TRUE, echo=FALSE);
@@ -303,7 +294,7 @@ barplot_scalingFactors <- function(scalingFactorsList, postdir){
    plotRows <- ceiling( Nplots / plotCols )
    pngwidth<-4500; pngheight<-2000;
    pngwidth<-plotCols*500; pngheight<-plotRows*400;
-   png(filename=sprintf("%s/ScalingFactors.png", postdir) , width=pngwidth, height=pngheight);
+   png(filename=file.path(postdir, "ScalingFactors.png") , width=pngwidth, height=pngheight);
    #png(filename=sprintf("%s/ScalingFactorsFlipped.png", postdir) , width=pngwidth, height=pngheight);
    layout(matrix(1:(plotCols*plotRows), ncol=plotCols, byrow=T));
    par(mar=c(2.5,2.5,2.5,1)+0.1); # 'c(bottom, left, top, right)' default is 'c(5, 4, 4, 2) + 0.1'.
@@ -328,10 +319,7 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
    mt0 <- Sys.time();
    #whichlines <- minCount;
    whichlines <- NULL;
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+   anchors_list <- sort(ls_cmd(basedir, patt = sprintf("_%s", anchorKeyword)))
    anchor_counter <- 0;
 
    # Build a 2-level list: anchorDataListList[[col_to_norm]][[batch]]
@@ -456,8 +444,8 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
       logToFile(outputfile, sprintf("Done scalingFactorsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);
    }
 
-   save(scalingFactorsList, file=sprintf("%s/scalingFactorsList.Rdata", dirname(outputfile)));
- 
+   save(scalingFactorsList, file=file.path(dirname(outputfile), "scalingFactorsList.Rdata"))
+
    barplot_scalingFactors(scalingFactorsList, postdir=dirname(outputfile));
    mt1 <- Sys.time();
    logToFile(outputfile, "getScalingFactors duration:", timestamp=TRUE, echo=FALSE);
@@ -484,14 +472,16 @@ BatchAdjust <- function(
 
    whichlines <- NULL;
    timestamp <- format(Sys.time(), format="%Y.%m.%d.%H%M%S");
-   # Escape any spaces in file names.
-   # Also enforce that batchKeyword doesn't contain spaces...
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   outdir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=outdir, fixed=TRUE);
-   anchorKeyword_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   mkdir_cmd <- sprintf("mkdir -p %s", outdir_escapeSpace);
-   mkret <- system(mkdir_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
-   outputfile <- sprintf("%s/LOG_BatchAdjust.%s.txt", outdir, timestamp);
+   if (!file.exists(channelsFile)) {
+     cols_to_norm <- get_cols_to_norm(basedir=basedir, anchorKeyword=anchorKeyword);
+     write.table(cols_to_norm, file=channelsFile, quote=FALSE, row.names = FALSE, col.names = FALSE)
+     message("A channelsFile has been created. Edit \'", channelsFile, "\' and rerun batchAdjust.")
+     return()
+   } 
+   if (dir.exists(outdir))
+     stop("outdir \'", outdir, "\' already exists. It cannot be overwritten.")
+   dir.create(outdir, recursive = TRUE)
+   outputfile <- file.path(outdir, sprintf("LOG_BatchAdjust.%s.txt", timestamp))
 
    logToFile(logfilename=outputfile, logmessage="BatchAdjust.R", timestamp=TRUE, echo=TRUE, overwrite=FALSE);
    logToFile(outputfile, sprintf("basedir:%s",basedir));
@@ -584,8 +574,7 @@ BatchAdjust <- function(
 
       # Apply to each file.
       #  Non-Anchor filenaming:   xxx[batchKeyword][##]_xxx.fcs
-      ls_cmd <- sprintf("ls -1 %s/*%s%i_*.fcs", basedir_escapeSpace, batchKeyword, thisbatch);
-      fcs_files <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+      fcs_files <- sort(ls_cmd(basedir, patt = sprintf("%s%i_", batchKeyword, thisbatch)))
       for(fcsfile in fcs_files){
          file_counter <- file_counter + 1;
          logToFile(outputfile, sprintf("file %i", file_counter));
@@ -642,12 +631,12 @@ BatchAdjust <- function(
          # Add an extension to the output file name to distinguish.
          #  addExt <- c(); # or don't
          if(is.null(addExt)){
-            outfilename <- sprintf("%s/%s", outdir, basename(fcsfile));
+            outfilename <- file.path(outdir, basename(fcsfile))
          }else{
             replfcs <- sprintf("%s.fcs", addExt);
             #basenameW_BNext <- gsub(pattern="\\.fcs$", replacement="_BN.fcs", x=basename(fcsfile), fixed=F);
             basenameW_BNext <- gsub(pattern="\\.fcs$", replacement=replfcs, x=basename(fcsfile), fixed=F);
-            outfilename <- sprintf("%s/%s", outdir, basenameW_BNext);
+            outfilename <- file.path(outdir, basenameW_BNext)
          }
          #write.FCS(thisFCSobject, filename=outfilename);
          write.FCS(newFCSobject, filename=outfilename);
@@ -692,23 +681,15 @@ BatchAdjust <- function(
 
 # Plot all anchors for one channel.
 plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), anchorKeyword="anchor stim", batchKeyword="Barcode_", predir=c(), colorPre="blue", colorPost="wheat", addExt=c()){
-   grepForAnchor_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=anchorKeyword, fixed=TRUE);
-   predir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=predir, fixed=TRUE);
-
    chname <- get_ch_name(ch, predir);
    print(sprintf("%s", chname), q=F);
-   anchorKeyword_underscore <- gsub(pattern=" ", replacement="_", x=anchorKeyword, fixed=TRUE);
 
    basedir <- postdir;
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   pngoutdir_escaped <- sprintf("%s/DistributionPlots", basedir_escapeSpace);
-   mkdir_cmd <- sprintf("mkdir -p %s", pngoutdir_escaped);
-   mkret <- system(mkdir_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
-   pngoutdir <- sprintf("%s/DistributionPlots", basedir);
-   pngname <- sprintf("%s/%s.png", pngoutdir, chname);
+   pngoutdir <- file.path(basedir, "DistributionPlots")
+   dir.create(pngoutdir, recursive = TRUE)
+   pngname <- file.path(pngoutdir, paste0(chname, ".png"))
 
-   ls_cmd <- sprintf("ls -1 %s/*%s*.fcs", basedir_escapeSpace, grepForAnchor_escapeSpace);
-   anchors_list <- system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);
+   anchors_list <- ls_cmd(basedir, anchorKeyword)
    anchors_list <- sortAnchorsByBatch(anchors_list,  anchorKeyword=anchorKeyword, batchKeyword=batchKeyword);
    N_anchors <- length(anchors_list);
 
@@ -723,11 +704,11 @@ plotAllAPrePost1ch <- function(ch="CD3", xlim=c(0,8), plotnz=TRUE, postdir=c(), 
             col <- colorPre;
             if(is.null(addExt)){
                #fname <- sprintf("%s/%s", predir_escapeSpace, basename(fname));
-               fname <- sprintf("%s/%s", predir, basename(fname));
+               fname <- file.path(predir, basename(fname))
             } else{
                addedPat <- sprintf("%s.fcs$", addExt);
                #fname <- sprintf("%s/%s", predir_escapeSpace, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
-               fname <- sprintf("%s/%s", predir, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F));
+               fname <- file.path(predir, gsub(pattern=addedPat, replacement=".fcs", x=basename(fname), fixed=F))
             }
          } else{
             col <- colorPost;
@@ -746,9 +727,7 @@ get_ch_name <- function(ch, basedir=c()){
 	if(is.null(basedir)){
 		stop("get_ch_name must be supplied with basedir, a directory to find a sample fcs file.")
 	}
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   ls_cmd <- sprintf("ls -1t %s/*.fcs", basedir_escapeSpace);
-   anchors_list <- system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE);   
+   anchors_list <- ls_cmd(basedir, "");   
    anchor_file <- anchors_list[1];
    fc <- read.FCS(anchor_file, which.lines=10);
    chname <- grep(ch,pData(parameters(fc))$desc, value=T);
@@ -776,7 +755,7 @@ call_plotAllAPrePost1ch <- function(plotnz=TRUE, xlim=c(0,8), postdir=c(), ancho
 # fullnames=TRUE -> 145Nd_IFNg eg  more informative
 # fullnames=FALSE -> Nd145Di eg  matches cols_to_norm
 # trans=TRUE -> asinh
-fc_read <- function(fname="011118_Barcode_7_anchor stim_CD3+ CD19+.fcs", trans=TRUE, which.lines=NULL, fullnames=TRUE){
+fc_read <- function(fname, trans=TRUE, which.lines=NULL, fullnames=TRUE){
    fc <- read.FCS(fname, transformation=NULL, which.lines=which.lines, truncate_max_range=FALSE); # flowFrame
    fce <- exprs(fc); # matrix
    # flowFrame is an AnnotatedDataFrame from Biobase. To access useful names, have to use this:
@@ -940,7 +919,8 @@ varBarPlot <- function(mat_pre, mat_post, colorPre="blue", colorPost="wheat"){
 }
 
 get_bar_code_from_filename <- function(fname, batchKeyword="Plate"){
-   parts <- unlist(strsplit( x=gsub(pattern=".fcs$", replacement="", x=fname), split=batchKeyword));
+  ##-- \\.?
+   parts <- unlist(strsplit( x=gsub(pattern="\\.fcs$", replacement="", x=fname, ignore.case = TRUE), split=batchKeyword));
    subparts <- unlist(strsplit( x=parts[2], split="_"));
    return(subparts[1]);
 }
@@ -951,9 +931,7 @@ get_bar_code_from_filename <- function(fname, batchKeyword="Plate"){
 # Does it matter if trans=FALSE or TRUE?
 # Similar to above, but not subpopulations. All cell events.
 get_summaries_per_channel <- function(basedir, cols_to_use, batchKeyword="Plate", anchorKeyword = "Sample2"){
-   basedir_escapeSpace <- gsub(pattern=" ", replacement="\\ ", x=basedir, fixed=TRUE);
-   ls_cmd <- sprintf("ls -1 %s/*.fcs", basedir_escapeSpace);
-   fcsfiles <- sort(system(ls_cmd, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = TRUE, wait = TRUE));
+   fcsfiles <- sort(ls_cmd(basedir, ""))
    #togrep <- "anchor stim";
    togrep <- anchorKeyword;
    filelist <- sort(grep(togrep, fcsfiles, fixed=TRUE, value=TRUE)); 
@@ -992,9 +970,9 @@ totalVar_allEvents <- function(predir, postdir, batchKeyword, channelsFile, anch
       pv <- N_as_or_more_extreme / length(perm_tests);
 
       pngwidth<-1600; pngheight<-1200;
-      png(filename=sprintf("%s/PrePostVariance.png", postdir) , width=pngwidth, height=pngheight);
+      png(filename=file.path(postdir, "PrePostVariance.png") , width=pngwidth, height=pngheight);
       layout(matrix(c(1,2,3,3), nrow=2, byrow=TRUE));
-      title <- sprintf("%s", "Mean signal intensity per replicate");
+      title <- "Mean signal intensity per replicate"
 
       # plot 1:
       par(cex=1.5);
