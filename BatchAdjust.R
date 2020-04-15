@@ -258,10 +258,15 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
            idx <- as.integer(seq(1, nqpoints, length.out = 1001))
            plot(refq[[acol]][idx], qx[idx], pch = 19, col = "dodgerblue", main = acol,
                 xlab = "Reference", ylab = paste0("Batch ", thisBatchChar))
-           hist1 <- hist(anchorDataListList[[acol]][["1"]], 
-                         breaks = seq(0, 10, length.out = 101), plot = FALSE)
-           histx <- hist(anchorDataListList[[acol]][[thisBatchChar]], 
-                         breaks = seq(0, 10, length.out = 101), plot = FALSE)
+           int1 <- anchorDataListList[[acol]][["1"]]
+           int1[int1 < -.2] <- -.2
+           int1[int1 > +10] <- +10
+           intx <- anchorDataListList[[acol]][[thisBatchChar]]
+           intx[intx < -.2] <- -.2
+           intx[intx > +10] <- +10
+           breaks <- seq(-0.2, 10, length.out = 103)
+           hist1 <- hist(int1, breaks = breaks, plot = FALSE)
+           histx <- hist(intx, breaks = breaks, plot = FALSE)
            plot(hist1$mids, sqrt(hist1$counts), pch = 19, col = "dodgerblue", 
                 main = paste0("Batch ", thisBatchChar),
                 xlab = acol, ylab =  "sqrt(counts)",

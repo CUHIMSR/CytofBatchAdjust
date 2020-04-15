@@ -20,7 +20,7 @@ g_asinh_b <- 1/5
 # debug_qqplot <- TRUE
 
 # run the adjustment
-outdir <- batch_normalized"  # outdir is used for the qqplot
+outdir <- "batch_normalized"  # outdir is used for the qqplot
 BatchAdjust(
   basedir = ".",
   outdir = outdir,
