@@ -14,8 +14,10 @@
 library("flowCore") # for read.FCS
 
 # Define asinh factor:
-#g_asinh_b <- 1/5; # global asinh factor; transform is asinh(x*b); corresponds to a_b in cytofkit cytof_exprsExtract()
-g_asinh_b <- 1; # global asinh factor; transform is asinh(x*b); corresponds to a_b in cytofkit cytof_exprsExtract()
+# global asinh factor; transform is asinh(x*b); corresponds to a_b in cytofkit cytof_exprsExtract()
+#g_asinh_b <- 1; # default value on Github
+if (!exists("g_asinh_b"))
+  g_asinh_b <- 1/5
 
 # logToFile
 # Maintain a log.
@@ -245,6 +247,35 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
          spf <- splinefun(x=qx, y=refq[[acol]], method="monoH.FC", ties=min);
          #spf <- approxfun(x=qx, y=refq[[acol]], rule=2, ties=min, yleft=0); # clips
          thisBatchFunctionsList[[acol]] <- spf;
+         ## debug plot @SamGG 20/04/15 ----
+         if (exists("debug_qqplot") && debug_qqplot) {
+           dir_qqplot <- file.path(outdir, "debug_quantile_plot")
+           #browser()
+           if (!dir.exists(dir_qqplot)) dir.create(dir_qqplot, recursive = TRUE)
+           png(file.path(dir_qqplot, sprintf("Col_%s-Bat_%s.png", acol, thisBatchChar)),
+               width = 1200, height = 500)
+           par(mfrow = c(1,3))  ## split the plotting region in to 1 row 2 columns
+           idx <- as.integer(seq(1, nqpoints, length.out = 1001))
+           plot(refq[[acol]][idx], qx[idx], pch = 19, col = "dodgerblue", main = acol,
+                xlab = "Reference", ylab = paste0("Batch ", thisBatchChar))
+           hist1 <- hist(anchorDataListList[[acol]][["1"]], 
+                         breaks = seq(0, 10, length.out = 101), plot = FALSE)
+           histx <- hist(anchorDataListList[[acol]][[thisBatchChar]], 
+                         breaks = seq(0, 10, length.out = 101), plot = FALSE)
+           plot(hist1$mids, sqrt(hist1$counts), pch = 19, col = "dodgerblue", 
+                main = paste0("Batch ", thisBatchChar),
+                xlab = acol, ylab =  "sqrt(counts)",
+                ylim = c(0, sqrt(max(hist1$counts, histx$counts))))
+           points(histx$mids, sqrt(histx$counts), pch = 19, col = "firebrick1")
+           legend("topright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
+           plot((refq[[acol]][idx]), seq(idx)/10, pch = 19, col = "dodgerblue", 
+                main = paste0("Batch ", thisBatchChar),
+                xlab = acol, ylab =  "Quantile")
+           points(qx[idx], seq(idx)/10, pch = 19, col = "firebrick1")
+           legend("bottomright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
+           dev.off()
+         }
+         ## debug plot end ----
       }
       mappingFunctionsList[[thisBatchChar]] <- thisBatchFunctionsList;
       logToFile(outputfile, sprintf("Done mappingFunctionsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);

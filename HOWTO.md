@@ -12,16 +12,27 @@ Here is the main command to compute and apply the batch adjustment.
 Other parameters are explained in the README.
 
 ```
+# set the transformation cofactor
+g_asinh_b <- 1/5
+
+# for quantile method, you can add diagnostic graphics (qqplot, histo...) during computation
+# uncomment the following line
+# debug_qqplot <- TRUE
+
+# run the adjustment
+outdir <- batch_normalized"  # outdir is used for the qqplot
 BatchAdjust(
   basedir = ".",
-  outdir = "batch_normalized",
+  outdir = outdir,
   channelsFile = "ChannelsToAdjust.txt",
   batchKeyword = "Batch",
   anchorKeyword = "Anchor",
-  method = "95p",
+  method = "95p", # or lower percentage, e.g. "80p", 
+                  # or "quantile" to use a spline function
   transformation = FALSE,
   addExt = NULL,
-  plotDiagnostics = TRUE)
+  plotDiagnostics = TRUE
+)
 ```
 
 If the file ChannelsToAdjust.txt does not exist, it will be filled with the
