@@ -15,6 +15,9 @@ Other parameters are explained in the README.
 # set the transformation cofactor
 g_asinh_b <- 1/5
 
+# quantile method: set number of points for spline computation
+nqpoints <- 1000  # 100000 by default
+
 # for quantile method, you can add diagnostic graphics (qqplot, histo...) during computation
 # uncomment the following line
 # debug_qqplot <- TRUE
@@ -23,6 +26,7 @@ g_asinh_b <- 1/5
 outdir <- "batch_normalized"  # outdir is used for the qqplot
 # in case you need to erase a previous computation
 # unlink(outdir, recursive = TRUE)  # DANGER: remove outdir and ALL its content
+
 # run the adjustment
 BatchAdjust(
   basedir = ".",
