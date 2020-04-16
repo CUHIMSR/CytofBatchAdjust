@@ -247,17 +247,28 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
          spf <- splinefun(x=qx, y=refq[[acol]], method="monoH.FC", ties=min);
          #spf <- approxfun(x=qx, y=refq[[acol]], rule=2, ties=min, yleft=0); # clips
          thisBatchFunctionsList[[acol]] <- spf;
+         
          ## debug plot @SamGG 20/04/15 ----
+         
          if (exists("debug_qqplot") && debug_qqplot) {
            dir_qqplot <- file.path(outdir, "debug_quantile_plot")
-           #browser()
+           #if (thisBatchChar != "1" && acol == "Er170Di") browser()
            if (!dir.exists(dir_qqplot)) dir.create(dir_qqplot, recursive = TRUE)
            png(file.path(dir_qqplot, sprintf("Col_%s-Bat_%s.png", acol, thisBatchChar)),
                width = 1200, height = 500)
            par(mfrow = c(1,3))  ## split the plotting region in to 1 row 2 columns
+           # qqplot
            idx <- as.integer(seq(1, nqpoints, length.out = 1001))
            plot(refq[[acol]][idx], qx[idx], pch = 19, col = "dodgerblue", main = acol,
                 xlab = "Reference", ylab = paste0("Batch ", thisBatchChar))
+           abline(c(0,1), lty = 2)  # diagonal, perfectly reproducible
+           # overlay quantiles
+           qtl <- c(0.2, 0.4, 0.6, 0.8, 0.9, 0.95)
+           q_1 <- refq[[acol]][qtl*nqpoints]
+           q_x <- qx[qtl*nqpoints]
+           segments(0, 0, q_1, q_x, col = "grey60")
+           points(q_1, q_x, pch = 19, cex = 1.5)
+           # histograms
            int1 <- anchorDataListList[[acol]][["1"]]
            int1[int1 < -.2] <- -.2
            int1[int1 > +10] <- +10
@@ -273,14 +284,25 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
                 ylim = c(0, sqrt(max(hist1$counts, histx$counts))))
            points(histx$mids, sqrt(histx$counts), pch = 19, col = "firebrick1")
            legend("topright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
+           # overlay quantiles
+           q_1_counts <- spline(hist1$mids, sqrt(hist1$counts), xout = q_1)
+           points(q_1_counts, pch = 21, cex = 1.5)
+           q_x_counts <- spline(histx$mids, sqrt(histx$counts), xout = q_x)
+           points(q_x_counts, pch = 19, cex = 1.5)
+           # quantile plot
            plot((refq[[acol]][idx]), seq(idx)/10, pch = 19, col = "dodgerblue", 
                 main = paste0("Batch ", thisBatchChar),
                 xlab = acol, ylab =  "Quantile")
            points(qx[idx], seq(idx)/10, pch = 19, col = "firebrick1")
            legend("bottomright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
+           # overlay quantiles
+           points(q_1, qtl*100, pch = 21, cex = 1.5)
+           points(q_x, qtl*100, pch = 19, cex = 1.5)
            dev.off()
          }
+         
          ## debug plot end ----
+         
       }
       mappingFunctionsList[[thisBatchChar]] <- thisBatchFunctionsList;
       logToFile(outputfile, sprintf("Done mappingFunctionsList[[%s]]", thisBatchChar), timestamp=TRUE, echo=FALSE);

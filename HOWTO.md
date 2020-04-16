@@ -19,8 +19,11 @@ g_asinh_b <- 1/5
 # uncomment the following line
 # debug_qqplot <- TRUE
 
-# run the adjustment
+# prepare the adjustment
 outdir <- "batch_normalized"  # outdir is used for the qqplot
+# in case you need to erase a previous computation
+# unlink(outdir, recursive = TRUE)  # DANGER: remove outdir and ALL its content
+# run the adjustment
 BatchAdjust(
   basedir = ".",
   outdir = outdir,
