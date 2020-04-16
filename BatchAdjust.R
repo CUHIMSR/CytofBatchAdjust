@@ -251,19 +251,30 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
          ## debug plot @SamGG 20/04/15 ----
          
          if (exists("debug_qqplot") && debug_qqplot) {
-           dir_qqplot <- file.path(outdir, "debug_quantile_plot")
+           if (!exists("debug_qqplot_prev_batch")) {
+             debug_qqplot_prev_batch <- ""
+             dir_qqplot <- file.path(outdir, "debug_quantile_plot")
+             if (!dir.exists(dir_qqplot)) dir.create(dir_qqplot, recursive = TRUE)
+           }
+           if (thisBatchChar != debug_qqplot_prev_batch) {
+             logToFile(outputfile, sprintf("Diag plot for batch: %s",
+                                           thisBatchChar), timestamp=TRUE)
+             debug_qqplot_prev_batch  <- thisBatchChar
+           }
            #if (thisBatchChar != "1" && acol == "Er170Di") browser()
-           if (!dir.exists(dir_qqplot)) dir.create(dir_qqplot, recursive = TRUE)
-           png(file.path(dir_qqplot, sprintf("Col_%s-Bat_%s.png", acol, thisBatchChar)),
+           png(file.path(dir_qqplot, sprintf("%s-Batch_%s.png", acol, thisBatchChar)),
                width = 1200, height = 500)
            par(mfrow = c(1,3))  ## split the plotting region in to 1 row 2 columns
+           #  guess the intensity max in order to get the same range across all batches
+           max_plot <- max(qx[nqpoints], ceiling(refq[[acol]][nqpoints]+1))
            # qqplot
-           idx <- as.integer(seq(1, nqpoints, length.out = 1001))
+           idx <- as.integer(seq(1, nqpoints, length.out = min(1001, nqpoints)))
            plot(refq[[acol]][idx], qx[idx], pch = 19, col = "dodgerblue", main = acol,
+                xlim = c(0, max_plot), ylim = c(0, max_plot),
                 xlab = "Reference", ylab = paste0("Batch ", thisBatchChar))
            abline(c(0,1), lty = 2)  # diagonal, perfectly reproducible
            # overlay quantiles
-           qtl <- c(0.2, 0.4, 0.6, 0.8, 0.9, 0.95)
+           qtl <- c(0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.98)
            q_1 <- refq[[acol]][qtl*nqpoints]
            q_x <- qx[qtl*nqpoints]
            segments(0, 0, q_1, q_x, col = "grey60")
@@ -281,6 +292,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
            plot(hist1$mids, sqrt(hist1$counts), pch = 19, col = "dodgerblue", 
                 main = paste0("Batch ", thisBatchChar),
                 xlab = acol, ylab =  "sqrt(counts)",
+                xlim = c(0, max_plot),
                 ylim = c(0, sqrt(max(hist1$counts, histx$counts))))
            points(histx$mids, sqrt(histx$counts), pch = 19, col = "firebrick1")
            legend("topright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
@@ -292,6 +304,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
            # quantile plot
            plot((refq[[acol]][idx]), seq(idx)/10, pch = 19, col = "dodgerblue", 
                 main = paste0("Batch ", thisBatchChar),
+                xlim = c(0, max_plot),
                 xlab = acol, ylab =  "Quantile")
            points(qx[idx], seq(idx)/10, pch = 19, col = "firebrick1")
            legend("bottomright", c("Ref", "Batch"), col = c("dodgerblue", "firebrick1"), pch = 19)
