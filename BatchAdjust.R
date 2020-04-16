@@ -218,7 +218,7 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
 
 
    # Create the reference quantile.
-   nqpoints <- 100000;
+   if (!exists("nqpoints")) nqpoints <- 100000
    qtype <- 8; # Quantile algorithm. type=7 is default. type=8 recommended by Hyndman and Fan (1996)
    refq <- list();
    for(acol in cols_to_norm){
