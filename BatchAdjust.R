@@ -90,7 +90,8 @@ getMinEventCount <- function(anchorKeyword="anchor stim", basedir){
    minCount <- Inf;
    for(ananchor in anchors_list){
       anchor_counter <- anchor_counter + 1;
-      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines);
+      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines, 
+                                truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
       #thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines, column.pattern="Time");
       #this_data <- exprs(thisFCSobject);
       Nrows <- nrow(thisFCSobject);
@@ -121,7 +122,8 @@ get_cols_to_norm <- function(basedir, anchorKeyword=c()){
    }
    cols_to_norm <- c();
    anchor_file <- anchors_list[1];
-   anchor_object <- read.FCS(anchor_file, which.lines=10);
+   anchor_object <- read.FCS(anchor_file, which.lines=10, 
+                             truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
    anchor_data <- exprs(anchor_object);
    chi <- 0;
    chis_to_drop <- c();
@@ -195,7 +197,8 @@ getValueMappings <- function(anchorKeyword, batchKeyword, basedir, minCount, bat
       thisBatchNum <- getBatchNumFromFilename(basename(ananchor), batchKeyword=batchKeyword, anchorKeyword=anchorKeyword); # note this is numeric
       anchor_counter <- anchor_counter + 1;
       logToFile(outputfile, sprintf("Start loading events batch: %i (%i of %i)", thisBatchNum, anchor_counter, Nbatches), timestamp=TRUE);
-      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines);
+      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines, 
+                                truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
       this_data <- exprs(thisFCSobject);
       for(acol in colnames(this_data)){
          if(!(acol %in% cols_to_norm)){
@@ -406,7 +409,8 @@ getScalingFactors <- function(anchorKeyword, batchKeyword, basedir, minCount, ba
       thisBatchNum <- getBatchNumFromFilename(basename(ananchor), batchKeyword=batchKeyword, anchorKeyword=anchorKeyword); # note this is numeric
       anchor_counter <- anchor_counter + 1;
       logToFile(outputfile, sprintf("Start loading events batch: %i (%i of %i)", thisBatchNum, anchor_counter, Nbatches), timestamp=TRUE);
-      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines);
+      thisFCSobject <- read.FCS(ananchor, transformation=NULL, which.lines=whichlines, 
+                                truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
       this_data <- exprs(thisFCSobject);
       if(!is.null(minCount)){
          if(minCount > nrow(this_data)){
@@ -652,7 +656,8 @@ BatchAdjust <- function(
 
          # Make the adjustment per channel.
          tf0 <- Sys.time();
-         thisFCSobject <- read.FCS(fcsfile, transformation=NULL, which.lines=whichlines);
+         thisFCSobject <- read.FCS(fcsfile, transformation=NULL, which.lines=whichlines, 
+                                   truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
          this_data <- exprs(thisFCSobject);
          these_parameters <- parameters(thisFCSobject);
 
@@ -800,7 +805,8 @@ get_ch_name <- function(ch, basedir=c()){
 	}
    anchors_list <- ls_cmd(basedir, "");   
    anchor_file <- anchors_list[1];
-   fc <- read.FCS(anchor_file, which.lines=10);
+   fc <- read.FCS(anchor_file, which.lines=10, 
+                  truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue"))
    chname <- grep(ch,pData(parameters(fc))$desc, value=T);
    if(length(chname) == 0){
       chi <- grep(ch,colnames(fc), value=F);
@@ -827,7 +833,8 @@ call_plotAllAPrePost1ch <- function(plotnz=TRUE, xlim=c(0,8), postdir=c(), ancho
 # fullnames=FALSE -> Nd145Di eg  matches cols_to_norm
 # trans=TRUE -> asinh
 fc_read <- function(fname, trans=TRUE, which.lines=NULL, fullnames=TRUE){
-   fc <- read.FCS(fname, transformation=NULL, which.lines=which.lines, truncate_max_range=FALSE); # flowFrame
+   fc <- read.FCS(fname, transformation=NULL, which.lines=which.lines, 
+                  truncate_max_range = FALSE, emptyValue = options("read.FCS.emptyValue")) # flowFrame
    fce <- exprs(fc); # matrix
    # flowFrame is an AnnotatedDataFrame from Biobase. To access useful names, have to use this:
    #p <- parameters(fc);
@@ -1166,3 +1173,6 @@ copy_indexed_files <- function(
   cat(length(destination_files), " files at destination.\n")
   destination_files
 }
+
+options(read.FCS.emptyValue = TRUE)
+options("read.FCS.emptyValue")
